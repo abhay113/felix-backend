@@ -2,16 +2,13 @@ import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import { CreateUserDTO } from '../types/interface.types';
 
-const authService = new AuthService();
-
 export class AuthController {
-  public async createUser(req: Request, res: Response): Promise<void> {
+  // Make the createUser method static
+  public static async createUser(req: Request, res: Response): Promise<void> {
     try {
       const body: CreateUserDTO = req.body;
-      const result = await authService.createUser(body);
+      const result = await AuthService.createUser(body); // Call the static method from AuthService
       res.status(201).json(result);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err.response?.data || err.message);
       res.status(500).json({ error: 'User creation failed' });

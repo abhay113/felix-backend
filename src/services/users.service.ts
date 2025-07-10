@@ -1,9 +1,10 @@
-import { getUsers } from '../dao/users.dao';
+import { UserDAO } from '../dao/users.dao'; // Assuming the DAO is now a class
 
 export class UserService {
-  public async getUsers() {
+  // Static method to fetch users
+  public static async getUsers() {
     try {
-      const users = await getUsers();
+      const users = await UserDAO.getUsers(); // Call the static method from UserDAO
       return users;
     } catch (error) {
       console.error('Error while fetching users:', error);

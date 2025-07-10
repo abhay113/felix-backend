@@ -1,9 +1,10 @@
-import { getTransation } from '../dao/transaction.dao';
+import { TransactionDAO } from '../dao/transaction.dao';
 
 export class TransactionService {
-  public async getTransation() {
+  // Convert getTransation method to static
+  public static async getTransation() {
     try {
-      const users = await getTransation();
+      const users = await TransactionDAO.getTransation();
       return users;
     } catch (error) {
       console.error('Error while fetching users:', error);

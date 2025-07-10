@@ -2,31 +2,33 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { Keypair } from 'stellar-sdk';
 import { keycloakConfig } from '../config/keycloak.config';
-import { insertUserToDB } from '../dao/auth.dao';
+import { AuthDAO } from '../dao/auth.dao';
 import { CreateUserDTO } from '../types/interface.types';
 
 export class AuthService {
-
-  public async createUser(dto: CreateUserDTO) {
+  // Convert createUser to a static method
+  public static async createUser(dto: CreateUserDTO) {
     const userId = uuidv4();
 
+    // Get the token for Keycloak
     const tokenRes = await axios.post(
       `${keycloakConfig.keycloakUrl}/realms/master/protocol/openid-connect/token`,
       new URLSearchParams({
         grant_type: 'password',
         client_id: 'admin-cli',
         username: 'admin',
-        password: 'KcAdmin'
+        password: 'KcAdmin',
       }),
       {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
       }
     );
 
     const token = tokenRes.data.access_token;
 
+    // Create user in Keycloak
     await axios.post(
       `${keycloakConfig.keycloakUrl}/admin/realms/${keycloakConfig.realm}/users`,
       {
@@ -42,9 +44,11 @@ export class AuthService {
       }
     );
 
+    // Create Stellar keypair
     const stellarPair = Keypair.random();
 
-    await insertUserToDB({
+    // Insert user to DB
+    await AuthDAO.insertUserToDB({
       id: userId,
       email: dto.email,
       username: dto.username,
@@ -55,7 +59,7 @@ export class AuthService {
       userId,
       email: dto.email,
       stellarPublicKey: stellarPair.publicKey(),
-      stellarSecretKey: stellarPair.secret(), 
+      stellarSecretKey: stellarPair.secret(),
     };
   }
 }
