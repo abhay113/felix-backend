@@ -5,8 +5,6 @@ const router = Router();
 
 router.get('/getwallet',  WalletsController.getWallet)
 
-
-
 export default router;
 
 

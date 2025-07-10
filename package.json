@@ -30,9 +30,12 @@
     "@semantic-release/release-notes-generator": "^14.0.3",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
-    "@types/node": "^24.0.10",
+    "@types/node": "^24.0.12",
     "@types/nodemailer": "^6.4.17",
-    "cz-conventional-changelog": "^3.3.0"
+    "cz-conventional-changelog": "^3.3.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   },
   "config": {
     "commitizen": {
@@ -40,6 +43,7 @@
     }
   },
   "dependencies": {
+    "@stellar/stellar-sdk": "^13.3.0",
     "@supabase/supabase-js": "^2.50.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -49,11 +53,8 @@
     "husky": "^9.1.7",
     "joi": "^17.13.3",
     "nodemailer": "^7.0.5",
-    "nodemon": "^3.1.10",
     "pg": "^8.16.3",
     "stellar-sdk": "^13.3.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
     "typescript-eslint": "^8.35.1",
     "uuid": "^11.1.0"
   }

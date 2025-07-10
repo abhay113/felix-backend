@@ -5,6 +5,7 @@ import authRoutes from './src/routes/auth.routes';
 import userRoutes from './src/routes/users.routes';
 import transactionRoutes from './src/routes/transaction.routes';
 import walletsRoutes from './src/routes/wallets.routes';
+import stellarRoutes from './src/routes/stellar.routes';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use('/api/v1', authRoutes);
 app.use('/api/v1', userRoutes);
 app.use('/api/v1', walletsRoutes);
 app.use('/api/v1', transactionRoutes);
+app.use('/api/v1', stellarRoutes);
 
 app.get("/", (req, res) => {
     res.send("Welcome to the FELIX Backend!");
