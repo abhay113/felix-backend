@@ -1,6 +1,7 @@
 // stellar.controller.ts
 import { Request, Response } from 'express';
 import { StellarService } from '../services/stellar.service';
+import config from '../config/stellar.config';
 
 export class StellarController {
     static async setupAccount(req: Request, res: Response) {
@@ -85,6 +86,32 @@ export class StellarController {
             });
         } catch (error: any) {
             console.error('Issue Blue Dollar error:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+    static async getAssetBalance(req: Request, res: Response) {
+        try {
+            const { publicKey } = req.params;
+            const assetCode = config.assetCode;
+            const issuerPublicKey = config.issuerPublicKey;
+
+            if (!assetCode || !issuerPublicKey) {
+                res.status(400).json({
+                    success: false,
+                    error: 'assetCode and issuerPublicKey are required'
+                });
+            }
+            const result = await StellarService.getAssetBalance(publicKey, assetCode, issuerPublicKey);
+
+            res.status(200).json({
+                success: true,
+                data: result
+            });
+        } catch (error: any) {
+            console.error('Get asset balance error:', error);
             res.status(500).json({
                 success: false,
                 error: error.message

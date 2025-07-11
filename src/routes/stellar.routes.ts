@@ -12,5 +12,7 @@ router.post('/bluedollar/send', StellarController.sendBlueDollar);
 router.get('/account/:publicKey/balance', StellarController.getBalance);
 // Issue Blue DOllar to user
 router.post('/bluedollar/issue', StellarController.issueBlueDollarToUser);
+// check Blue DOllar balance
+router.get('/account/bluedollar/:publicKey', StellarController.getAssetBalance);
 
 export default router;
