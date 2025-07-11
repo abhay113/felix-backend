@@ -5,6 +5,6 @@ export default {
     friendbotUrl: 'https://friendbot.stellar.org',
     issuerPublicKey: 'GB5CWMSLHECCXVBBVI5ALG4G7UYUO2AW4MB662ZL627AVEMMHUVBNDMJ',
     issuerSecretKey: 'SB3OK2KGU3KGHEO2E3QXTIVUJIUOEAU4VALMA57RFLCPUYIGHWDDNB4C',
-    assetCode: 'BD',
+    assetCode: 'ABDL',
     trustLimit: '1000000'
 };

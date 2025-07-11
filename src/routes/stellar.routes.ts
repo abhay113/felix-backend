@@ -9,7 +9,7 @@ router.post('/account/setup', StellarController.setupAccount);
 // Send Blue Dollar tokens
 router.post('/bluedollar/send', StellarController.sendBlueDollar);
 // Check account balance
-router.get('/account/:publicKey/balance', StellarController.getBalance);
+router.get('/account/balance/:publicKey', StellarController.getBalance);
 // Issue Blue DOllar to user
 router.post('/bluedollar/issue', StellarController.issueBlueDollarToUser);
 // check Blue DOllar balance
@@ -23,6 +23,5 @@ router.post('/offers/buy', StellarController.createBuyOffer);
 
 // Get all offers for an account
 router.get('/offers/:publicKey', StellarController.getOffers);
-
 
 export default router;
