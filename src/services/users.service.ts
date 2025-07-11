@@ -11,4 +11,14 @@ export class UserService {
       throw new Error('Failed to fetch users');
     }
   }
+
+   public static async getUsersByName(userName:string) {
+    try {
+      const users = await UserDAO.getUsersByName(userName); // Call the static method from UserDAO
+      return users;
+    } catch (error) {
+      console.error('Error while fetching users:', error);
+      throw new Error('Failed to fetch users');
+    }
+  }
 }
