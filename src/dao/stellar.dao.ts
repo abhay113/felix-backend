@@ -216,4 +216,214 @@ export class StellarDAO {
             throw new Error(`Failed to get asset balance: ${error.message}`);
         }
     }
+
+    // Add these new methods to your StellarDAO class
+
+    static async createSellOffer(
+        secretKey: string,
+        assetCode: string,
+        issuerPublicKey: string,
+        amount: string,
+        price: string,
+        memo?: string
+    ) {
+        try {
+            const keypair = StellarSdk.Keypair.fromSecret(secretKey);
+            const account = await server.loadAccount(keypair.publicKey());
+            const sellingAsset = new StellarSdk.Asset(assetCode, issuerPublicKey);
+            const buyingAsset = StellarSdk.Asset.native(); // XLM
+            const fee = await server.fetchBaseFee();
+
+            const transactionBuilder = new StellarSdk.TransactionBuilder(account, {
+                fee: fee.toString(),
+                networkPassphrase: StellarSdk.Networks.TESTNET,
+            })
+                .addOperation(StellarSdk.Operation.manageSellOffer({
+                    selling: sellingAsset,
+                    buying: buyingAsset,
+                    amount: amount,
+                    price: price,
+                    offerId: '0' // 0 means create new offer
+                }))
+                .setTimeout(30);
+
+            // Add memo if provided
+            if (memo) {
+                transactionBuilder.addMemo(StellarSdk.Memo.text(memo));
+            }
+
+            const transaction = transactionBuilder.build();
+            transaction.sign(keypair);
+
+            const result = await server.submitTransaction(transaction);
+
+            console.log(`Sell offer created successfully. Hash: ${result.hash}`);
+            return result.hash;
+        } catch (error: any) {
+            console.error('Create sell offer failed:', error.response?.data || error.message);
+
+            // Handle specific Stellar errors
+            if (error.response?.data?.extras?.result_codes?.operations) {
+                const opErrors = error.response.data.extras.result_codes.operations;
+                throw new Error(`Sell offer operation failed: ${opErrors.join(', ')}`);
+            }
+
+            if (error.response?.data?.extras?.result_codes?.transaction) {
+                const txError = error.response.data.extras.result_codes.transaction;
+                throw new Error(`Transaction failed: ${txError}`);
+            }
+
+            throw new Error(`Failed to create sell offer: ${error.message}`);
+        }
+    }
+
+    static async createBuyOffer(
+        secretKey: string,
+        assetCode: string,
+        issuerPublicKey: string,
+        amount: string,
+        price: string,
+        memo?: string
+    ) {
+        try {
+            const keypair = StellarSdk.Keypair.fromSecret(secretKey);
+            const account = await server.loadAccount(keypair.publicKey());
+            const buyingAsset = new StellarSdk.Asset(assetCode, issuerPublicKey);
+            const sellingAsset = StellarSdk.Asset.native(); // XLM
+            const fee = await server.fetchBaseFee();
+
+            const transactionBuilder = new StellarSdk.TransactionBuilder(account, {
+                fee: fee.toString(),
+                networkPassphrase: StellarSdk.Networks.TESTNET,
+            })
+                .addOperation(StellarSdk.Operation.manageBuyOffer({
+                    selling: sellingAsset,
+                    buying: buyingAsset,
+                    buyAmount: amount,
+                    price: price,
+                    offerId: '0' // 0 means create new offer
+                }))
+                .setTimeout(30);
+
+            // Add memo if provided
+            if (memo) {
+                transactionBuilder.addMemo(StellarSdk.Memo.text(memo));
+            }
+
+            const transaction = transactionBuilder.build();
+            transaction.sign(keypair);
+
+            const result = await server.submitTransaction(transaction);
+
+            console.log(`Buy offer created successfully. Hash: ${result.hash}`);
+            return result.hash;
+        } catch (error: any) {
+            console.error('Create buy offer failed:', error.response?.data || error.message);
+
+            // Handle specific Stellar errors
+            if (error.response?.data?.extras?.result_codes?.operations) {
+                const opErrors = error.response.data.extras.result_codes.operations;
+                throw new Error(`Buy offer operation failed: ${opErrors.join(', ')}`);
+            }
+
+            if (error.response?.data?.extras?.result_codes?.transaction) {
+                const txError = error.response.data.extras.result_codes.transaction;
+                throw new Error(`Transaction failed: ${txError}`);
+            }
+
+            throw new Error(`Failed to create buy offer: ${error.message}`);
+        }
+    }
+
+    static async getAccountOffers(publicKey: string) {
+        try {
+            const offers = await server.offers()
+                .forAccount(publicKey)
+                .call();
+
+            return offers.records.map((offer: any) => ({
+                id: offer.id,
+                selling: {
+                    asset_type: offer.selling.asset_type,
+                    asset_code: offer.selling.asset_code,
+                    asset_issuer: offer.selling.asset_issuer
+                },
+                buying: {
+                    asset_type: offer.buying.asset_type,
+                    asset_code: offer.buying.asset_code,
+                    asset_issuer: offer.buying.asset_issuer
+                },
+                amount: offer.amount,
+                price: offer.price,
+                price_r: offer.price_r,
+                last_modified_ledger: offer.last_modified_ledger,
+                last_modified_time: offer.last_modified_time
+            }));
+        } catch (error: any) {
+            console.error('Get account offers failed:', error.message);
+            throw new Error(`Failed to get account offers: ${error.message}`);
+        }
+    }
+
+    // static async cancelOffer(secretKey: string, offerId: string) {
+    //     try {
+    //         const keypair = StellarSdk.Keypair.fromSecret(secretKey);
+    //         const account = await server.loadAccount(keypair.publicKey());
+    //         const fee = await server.fetchBaseFee();
+
+    //         // Get the offer details first to know which assets to use
+    //         const offers = await server.offers()
+    //             .forAccount(keypair.publicKey())
+    //             .call();
+
+    //         const offer = offers.records.find((o: any) => o.id === offerId);
+    //         if (!offer) {
+    //             throw new Error(`Offer with ID ${offerId} not found`);
+    //         }
+
+    //         const sellingAsset = offer.selling.asset_type === 'native'
+    //             ? StellarSdk.Asset.native()
+    //             : new StellarSdk.Asset(offer.selling.asset_code, offer.selling.asset_issuer);
+
+    //         const buyingAsset = offer.buying.asset_type === 'native'
+    //             ? StellarSdk.Asset.native()
+    //             : new StellarSdk.Asset(offer.buying.asset_code, offer.buying.asset_issuer);
+
+    //         const transaction = new StellarSdk.TransactionBuilder(account, {
+    //             fee: fee.toString(),
+    //             networkPassphrase: StellarSdk.Networks.TESTNET,
+    //         })
+    //             .addOperation(StellarSdk.Operation.manageSellOffer({
+    //                 selling: sellingAsset,
+    //                 buying: buyingAsset,
+    //                 amount: '0', // Setting amount to 0 cancels the offer
+    //                 price: offer.price,
+    //                 offerId: offerId
+    //             }))
+    //             .setTimeout(30)
+    //             .build();
+
+    //         transaction.sign(keypair);
+
+    //         const result = await server.submitTransaction(transaction);
+
+    //         console.log(`Offer canceled successfully. Hash: ${result.hash}`);
+    //         return result.hash;
+    //     } catch (error: any) {
+    //         console.error('Cancel offer failed:', error.response?.data || error.message);
+
+    //         // Handle specific Stellar errors
+    //         if (error.response?.data?.extras?.result_codes?.operations) {
+    //             const opErrors = error.response.data.extras.result_codes.operations;
+    //             throw new Error(`Cancel offer operation failed: ${opErrors.join(', ')}`);
+    //         }
+
+    //         if (error.response?.data?.extras?.result_codes?.transaction) {
+    //             const txError = error.response.data.extras.result_codes.transaction;
+    //             throw new Error(`Transaction failed: ${txError}`);
+    //         }
+
+    //         throw new Error(`Failed to cancel offer: ${error.message}`);
+    //     }
+    // }
 }

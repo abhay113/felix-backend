@@ -12,7 +12,7 @@ export class UserDAO {
       throw new Error(`Supabase getUsers error: ${error.message}`);
     }
 
-    console.log("datadatadatadata",data);
+    // console.log("datadatadatadata",data);
     
     return data;
   }

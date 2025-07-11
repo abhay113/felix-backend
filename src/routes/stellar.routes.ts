@@ -15,4 +15,14 @@ router.post('/bluedollar/issue', StellarController.issueBlueDollarToUser);
 // check Blue DOllar balance
 router.get('/account/bluedollar/:publicKey', StellarController.getAssetBalance);
 
+// Create sell offer (selling BD for XLM)
+router.post('/offers/sell', StellarController.createSellOffer);
+
+// Create buy offer (buying BD with XLM)
+router.post('/offers/buy', StellarController.createBuyOffer);
+
+// Get all offers for an account
+router.get('/offers/:publicKey', StellarController.getOffers);
+
+
 export default router;

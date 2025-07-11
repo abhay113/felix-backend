@@ -1,14 +1,15 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import { Keypair } from 'stellar-sdk';
 import { keycloakConfig } from '../config/keycloak.config';
 import { AuthDAO } from '../dao/auth.dao';
 import { WalletsDAO } from '../dao/wallets.dao';
 import { CreateUserDTO } from '../types/interface.types';
+import { StellarService } from '../services/stellar.service'; // Adjust path if needed
+
 
 export class AuthService {
   // Convert createUser to a static method
- public static async createUser(dto: CreateUserDTO) {
+  public static async createUser(dto: CreateUserDTO) {
     const userId = uuidv4(); // Generate a unique ID for the user
 
     let token: string = ''; // Initialize token
@@ -66,7 +67,7 @@ export class AuthService {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
+
       const keycloakUser = userSearchRes.data[0]; // Assuming email is unique and returns one user
       if (!keycloakUser) {
         throw new Error('Could not find created user in Keycloak after creation.');
@@ -84,9 +85,9 @@ export class AuthService {
       );
       groups = groupsRes.data; // Extract the groups data
       console.log('Keycloak Groups fetched:', groups); // Log the fetched groups for debugging
-      
+
       const groupName = "users";
-      
+
       // --- Step 5: Assign user to a specific group (if groupName is provided) ---
       if (keycloakUserId) {
         const targetGroup = groups.find((group: any) => group.name === groupName);
@@ -110,9 +111,9 @@ export class AuthService {
       throw error;
     }
 
-    // --- Step 6: Create Stellar keypair ---
-    const stellarPair = Keypair.random();
-    console.log("stellarPairstellarPairstellarPair", stellarPair); // Keeping this log as requested
+    // --- Step 6: Create Stellar wallet + trustline ---
+    console.log("Creating Stellar wallet and trustline...");
+    const stellarResult = await StellarService.createAndSetupAccount();
 
     // --- Step 7: Insert user details into your application's database ---
     await AuthDAO.insertUserToDB({
@@ -124,21 +125,22 @@ export class AuthService {
 
     await WalletsDAO.insertWalletToDB({
       owner_id: userId,
-      public_key: stellarPair.publicKey(), // Use the method instead of private property
-      secret_key: stellarPair.secret(), // Use the method instead of private property
+      public_key: stellarResult.publicKey,
+      secret_key: stellarResult.secretKey,
       balance: 0,
       created_at: new Date().toISOString().replace('T', ' ').split('.')[0],
       created_by: dto.created_by,
     });
-
     // --- Step 8: Return user details and fetched groups ---
+
     return {
       userId,
       email: dto.email,
-      stellarPublicKey: stellarPair.publicKey(),
-      stellarSecretKey: stellarPair.secret(),
-      keycloakGroups: groups, // Include the fetched Keycloak groups in the response
-      assignedKeycloakUserId: keycloakUserId, // Include the Keycloak user ID for reference
+      stellarPublicKey: stellarResult.publicKey,
+      stellarSecretKey: stellarResult.secretKey, // 🚫 Remove in prod
+      trustTransactionHash: stellarResult.trustTransactionHash,
+      assetCode: stellarResult.assetCode,
+      issuerPublicKey: stellarResult.issuerPublicKey,
     };
   }
 }

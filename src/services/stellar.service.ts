@@ -165,4 +165,112 @@ export class StellarService {
         }
     }
 
+    // Add these new methods to your StellarService class
+
+    static async createSellOffer(secretKey: string, amount: string, price: string, memo?: string) {
+        try {
+            console.log('Step 1: Validating account...');
+            const publicKey = StellarDAO.getPublicKeyFromSecret(secretKey);
+            await StellarDAO.validateAccounts(secretKey, publicKey);
+
+            console.log('Step 2: Creating sell offer...');
+            const transactionHash = await StellarDAO.createSellOffer(
+                secretKey,
+                config.assetCode,
+                config.issuerPublicKey,
+                amount,
+                price,
+                memo
+            );
+
+            console.log('Step 3: Sell offer created successfully!');
+            return {
+                message: 'Blue Dollar sell offer created successfully',
+                transactionHash,
+                seller: publicKey,
+                sellingAsset: config.assetCode,
+                buyingAsset: 'XLM',
+                amount,
+                price,
+                memo: memo || null,
+                timestamp: new Date().toISOString()
+            };
+        } catch (error: any) {
+            console.error('Create sell offer error:', error);
+            throw new Error(`Failed to create sell offer: ${error.message}`);
+        }
+    }
+
+    static async createBuyOffer(secretKey: string, amount: string, price: string, memo?: string) {
+        try {
+            console.log('Step 1: Validating account...');
+            const publicKey = StellarDAO.getPublicKeyFromSecret(secretKey);
+            await StellarDAO.validateAccounts(secretKey, publicKey);
+
+            console.log('Step 2: Creating buy offer...');
+            const transactionHash = await StellarDAO.createBuyOffer(
+                secretKey,
+                config.assetCode,
+                config.issuerPublicKey,
+                amount,
+                price,
+                memo
+            );
+
+            console.log('Step 3: Buy offer created successfully!');
+            return {
+                message: 'Blue Dollar buy offer created successfully',
+                transactionHash,
+                buyer: publicKey,
+                sellingAsset: 'XLM',
+                buyingAsset: config.assetCode,
+                amount,
+                price,
+                memo: memo || null,
+                timestamp: new Date().toISOString()
+            };
+        } catch (error: any) {
+            console.error('Create buy offer error:', error);
+            throw new Error(`Failed to create buy offer: ${error.message}`);
+        }
+    }
+
+    static async getAccountOffers(publicKey: string) {
+        try {
+            const offers = await StellarDAO.getAccountOffers(publicKey);
+
+            return {
+                message: 'Account offers retrieved successfully',
+                publicKey,
+                offers,
+                totalOffers: offers.length
+            };
+        } catch (error: any) {
+            console.error('Get account offers error:', error);
+            throw new Error(`Failed to get account offers: ${error.message}`);
+        }
+    }
+
+    // static async cancelOffer(secretKey: string, offerId: string) {
+    //     try {
+    //         console.log('Step 1: Validating account...');
+    //         const publicKey = StellarDAO.getPublicKeyFromSecret(secretKey);
+    //         await StellarDAO.validateAccounts(secretKey, publicKey);
+
+    //         console.log('Step 2: Canceling offer...');
+    //         const transactionHash = await StellarDAO.cancelOffer(secretKey, offerId);
+
+    //         console.log('Step 3: Offer canceled successfully!');
+    //         return {
+    //             message: 'Offer canceled successfully',
+    //             transactionHash,
+    //             publicKey,
+    //             offerId,
+    //             timestamp: new Date().toISOString()
+    //         };
+    //     } catch (error: any) {
+    //         console.error('Cancel offer error:', error);
+    //         throw new Error(`Failed to cancel offer: ${error.message}`);
+    //     }
+    // }
 }
