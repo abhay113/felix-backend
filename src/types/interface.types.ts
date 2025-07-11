@@ -9,7 +9,9 @@ export interface payment {
 
 export interface CreateUserDTO {
   username: string;
+  name: string;
   email: string;
   fullName: string;
-  createdBy?: string;
+  created_by?: string;
+  password:string
 }
