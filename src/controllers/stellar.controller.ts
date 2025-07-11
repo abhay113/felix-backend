@@ -69,7 +69,10 @@ export class StellarController {
     }
     static async issueBlueDollarToUser(req: Request, res: Response) {
         try {
-            const { receiverPublicKey, amount, memo } = req.body;
+            const { receiverPublicKey, amount, memo , walletId} = req.body;
+
+            console.log('req.bodyreq.body',req.body);
+            
 
             if (!receiverPublicKey || !amount) {
                 res.status(400).json({
@@ -78,7 +81,7 @@ export class StellarController {
                 });
             }
 
-            const result = await StellarService.issueBlueDollarToUser(receiverPublicKey, amount, memo);
+            const result = await StellarService.issueBlueDollarToUser(receiverPublicKey, amount, memo, walletId);
 
             res.status(200).json({
                 success: true,

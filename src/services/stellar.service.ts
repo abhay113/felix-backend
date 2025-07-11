@@ -2,6 +2,7 @@
 // stellar.service.ts
 import { StellarDAO } from '../dao/stellar.dao';
 import config from '../config/stellar.config';
+import { WalletsDAO} from '../dao/wallets.dao'
 
 export class StellarService {
     static async createAndSetupAccount() {
@@ -108,7 +109,7 @@ export class StellarService {
             throw new Error(`Failed to get account balance: ${error.message}`);
         }
     }
-    static async issueBlueDollarToUser(receiverPublicKey: string, amount: string, memo?: string) {
+    static async issueBlueDollarToUser(receiverPublicKey: string, amount: string, memo?: string, walletId?:any) {
         try {
             const issuerSecretKey = config.issuerSecretKey;
             const issuerPublicKey = config.issuerPublicKey;
@@ -117,6 +118,19 @@ export class StellarService {
                 throw new Error('Issuer secret key is not set in environment');
             }
 
+            const getWallet =  await WalletsDAO.getWalletById(walletId)
+            console.log("getWalletgetWallet",getWallet);
+
+           const updatedAmmount = (getWallet.balance === null)
+                ? Number(amount) // Ensure amount is a number if balance is null
+                : Number(getWallet.balance) + Number(amount);
+            
+
+            const upadteWallet = await WalletsDAO.updateWalletById(walletId,updatedAmmount)
+
+            console.log("upadteWalletupadteWallet",upadteWallet);
+            
+            
             // Check if receiver has a trustline
             const hasTrustline = await StellarDAO.checkTrustline(receiverPublicKey, config.assetCode, issuerPublicKey);
             if (!hasTrustline) {
