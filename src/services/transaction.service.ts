@@ -11,4 +11,8 @@ export class TransactionService {
       throw new Error('Failed to fetch users');
     }
   }
+
+   static async getUserTransactions(userId: string) {
+    return await TransactionDAO.getTransactionsForUser(userId);
+  }
 }

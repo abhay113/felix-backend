@@ -12,4 +12,19 @@ export class TransactionController {
       res.status(500).json({ error: 'User get failed' });
     }
   }
+
+  static async getUserTransactions(req: Request, res: Response) {
+    const userId = req.query.userId as string;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId in query' });
+    }
+
+    try {
+      const transactions = await TransactionService.getUserTransactions(userId);
+      res.status(200).json({ transactions });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
