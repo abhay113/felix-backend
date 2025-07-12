@@ -1,4 +1,6 @@
-import { v4 as uuidv4 } from 'uuid'
+
+// src/dao/entity.dao.ts
+import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../config/supabase.config';
 
 interface CreateEntityInput {
@@ -18,7 +20,6 @@ export class EntityDAO {
             .from('entities')
             .insert([
                 {
-               
                     name,
                     type,
                     description,
@@ -30,11 +31,7 @@ export class EntityDAO {
             .select()
             .single();
 
-        if (error) {
-            throw new Error(`Error creating entity: ${error.message}`);
-        }
-
-        return data;
+        return { data, error };
     }
 
     // Insert into `wallets` table
@@ -67,7 +64,7 @@ export class EntityDAO {
         return data;
     }
 
-    // Insert into `memberships` table (to assign admin role to entity manager)
+    // Insert into `memberships` table (to assign manager role to entity manager)
     static async addMembership(user_id: string, entity_id: string, created_by: string) {
         const { data, error } = await supabase
             .from('memberships')
@@ -76,7 +73,7 @@ export class EntityDAO {
                     id: uuidv4(),
                     user_id,
                     entity_id,
-                    role: 'entity_admin',
+                    role: 'manager',
                     created_by,
                     updated_by: created_by,
                 },
