@@ -4,7 +4,8 @@ import { StellarDAO } from '../dao/stellar.dao';
 import config from '../config/stellar.config';
 import { WalletsDAO} from '../dao/wallets.dao'
 import { OfferDAO } from '../dao/offer.dao';
-import { OfferData } from '../types/interface.types';
+import { OfferData, TransactionData } from '../types/interface.types';
+import { TransactionDAO } from '../dao/transaction.dao';
 
 export class StellarService {
     static async createAndSetupAccount() {
@@ -257,6 +258,23 @@ export class StellarService {
                 type: 'buy'
                 })
                 console.log("updatedOffer",updatedOffer)
+                if(updatedOffer) {
+                    const transactionData: TransactionData = {
+                        sender_id: buyer_id!,                      // buyer is the one paying
+                        receiver_id: updatedOffer.seller_id,       // seller from offer record
+                        asset_code: config.assetCode,
+                        amount: parseFloat(amount),
+                        memo,
+                        tx_hash: transactionHash,
+                        created_by: buyer_id,
+                        updated_by: buyer_id,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                        };
+
+                    const createdTransaction = await TransactionDAO.createTransaction(transactionData);
+                        console.log("createdTransaction",createdTransaction)
+                }
             console.log('Step 3: Buy offer created successfully!');
             return {
                 message: 'Blue Dollar buy offer created successfully',
