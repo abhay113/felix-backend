@@ -17,7 +17,7 @@ export class TransactionController {
     const userId = req.query.userId as string;
 
     if (!userId) {
-      return res.status(400).json({ error: 'Missing userId in query' });
+      res.status(400).json({ error: 'Missing userId in query' });
     }
 
     try {

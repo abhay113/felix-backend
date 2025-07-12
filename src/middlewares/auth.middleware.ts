@@ -17,14 +17,14 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
   const token = authHeader?.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'Access token missing' });
+    res.status(401).json({ error: 'Access token missing' });
   }
 
   try {
     const response = await axios.post(
       `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token/introspect`,
       new URLSearchParams({
-        token,
+        token: token ?? '',
         client_id: KEYCLOAK_CLIENT_ID,
         client_secret: KEYCLOAK_CLIENT_SECRET,
       }),
@@ -38,7 +38,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     const tokenInfo = response.data;
 
     if (!tokenInfo.active) {
-      return res.status(403).json({ error: 'Token is inactive or expired' });
+      res.status(403).json({ error: 'Token is inactive or expired' });
     }
 
     // Attach user info to request
@@ -53,6 +53,6 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     next();
   } catch (error: any) {
     console.error('Keycloak token validation failed:', error.message);
-    return res.status(500).json({ error: 'Failed to validate access token' });
+    res.status(500).json({ error: 'Failed to validate access token' });
   }
 };
