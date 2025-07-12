@@ -3,6 +3,8 @@
 import { StellarDAO } from '../dao/stellar.dao';
 import config from '../config/stellar.config';
 import { WalletsDAO} from '../dao/wallets.dao'
+import { OfferDAO } from '../dao/offer.dao';
+import { OfferData } from '../types/interface.types';
 
 export class StellarService {
     static async createAndSetupAccount() {
@@ -181,7 +183,7 @@ export class StellarService {
 
     // Add these new methods to your StellarService class
 
-    static async createSellOffer(secretKey: string, amount: string, price: string, memo?: string) {
+    static async createSellOffer(secretKey: string, amount: string, price: string, memo?: string, seller_id?:string, service_name?:string, desc?:string, created_by?:string) {
         try {
             console.log('Step 1: Validating account...');
             const publicKey = StellarDAO.getPublicKeyFromSecret(secretKey);
@@ -196,12 +198,27 @@ export class StellarService {
                 price,
                 memo
             );
-            
+
+            const offerData: OfferData = {
+                type: 'sell',
+                amount: parseFloat(amount),
+                seller_id: seller_id,
+                status: 'active',
+                created_by: created_by,
+                created_at: new Date().toISOString(),
+                service_name: service_name,
+                desc: desc,
+             };
+
+            const createdOffer = await OfferDAO.createOffer(offerData);
+            console.log("createdOffer",createdOffer)
             console.log('Step 3: Sell offer created successfully!');
             return {
                 message: 'Blue Dollar sell offer created successfully',
                 transactionHash,
                 seller: publicKey,
+                seller_id:seller_id,
+                status: 'active',
                 sellingAsset: config.assetCode,
                 buyingAsset: 'XLM',
                 amount,
@@ -215,7 +232,7 @@ export class StellarService {
         }
     }
 
-    static async createBuyOffer(secretKey: string, amount: string, price: string, memo?: string) {
+    static async createBuyOffer(secretKey: string, amount: string, price: string, memo?: string, offerId?:string, buyer_id?:string, updated_by?:string) {
         try {
             console.log('Step 1: Validating account...');
             const publicKey = StellarDAO.getPublicKeyFromSecret(secretKey);
@@ -231,17 +248,28 @@ export class StellarService {
                 memo
             );
 
+                const updatedOffer = await OfferDAO.updateOfferStatus(
+                    {
+                id: offerId,
+                status: 'completed',
+                buyer_id: buyer_id,
+                updated_by: updated_by,
+                type: 'buy'
+                })
+                console.log("updatedOffer",updatedOffer)
             console.log('Step 3: Buy offer created successfully!');
             return {
                 message: 'Blue Dollar buy offer created successfully',
                 transactionHash,
                 buyer: publicKey,
+                buyer_id:buyer_id,
+                status: 'completed',
                 sellingAsset: 'XLM',
                 buyingAsset: config.assetCode,
                 amount,
                 price,
                 memo: memo || null,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             };
         } catch (error: any) {
             console.error('Create buy offer error:', error);

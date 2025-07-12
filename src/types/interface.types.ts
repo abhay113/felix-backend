@@ -15,3 +15,18 @@ export interface CreateUserDTO {
   created_by?: string;
   password:string
 }
+
+export interface OfferData {
+    id?: string;
+    type: 'buy' | 'sell';
+    amount: number;
+    buyer_id?: string;
+    seller_id?: string;
+    status: 'active' | 'completed' | 'cancelled';
+    created_at?: string;
+    updated_at?: string;
+    created_by?: string;
+    updated_by?: string;
+    service_name?: string;
+    desc?:string
+}

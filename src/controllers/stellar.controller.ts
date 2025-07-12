@@ -126,7 +126,7 @@ export class StellarController {
 
     static async createSellOffer(req: Request, res: Response) {
         try {
-            const { secretKey, amount, price, memo } = req.body;
+            const { secretKey, amount, price, memo , seller_id, service_name, desc, created_by} = req.body;
 
             if (!secretKey || !amount || !price) {
                 res.status(400).json({
@@ -135,7 +135,7 @@ export class StellarController {
                 });
             }
 
-            const result = await StellarService.createSellOffer(secretKey, amount, price, memo);
+            const result = await StellarService.createSellOffer(secretKey, amount, price, memo,seller_id, service_name, desc,created_by);
 
             res.status(200).json({
                 success: true,
@@ -152,7 +152,7 @@ export class StellarController {
 
     static async createBuyOffer(req: Request, res: Response) {
         try {
-            const { secretKey, amount, price, memo } = req.body;
+            const { secretKey, amount, price, memo, id, buyer_id, updated_by } = req.body;
 
             if (!secretKey || !amount || !price) {
                 res.status(400).json({
@@ -161,7 +161,7 @@ export class StellarController {
                 });
             }
 
-            const result = await StellarService.createBuyOffer(secretKey, amount, price, memo);
+            const result = await StellarService.createBuyOffer(secretKey, amount, price, memo, id, buyer_id, updated_by);
 
             res.status(200).json({
                 success: true,
