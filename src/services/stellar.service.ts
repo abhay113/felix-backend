@@ -196,7 +196,7 @@ export class StellarService {
                 price,
                 memo
             );
-
+            
             console.log('Step 3: Sell offer created successfully!');
             return {
                 message: 'Blue Dollar sell offer created successfully',
