@@ -7,7 +7,7 @@ import transactionRoutes from './src/routes/transaction.routes';
 import walletsRoutes from './src/routes/wallets.routes';
 import stellarRoutes from './src/routes/stellar.routes';
 import entityRoutes from './src/routes/entity.routes';
-import offerRoutes from './src/routes/entity.routes';
+import offerRoutes from './src/routes/offer.routes';
 
 
 dotenv.config();
