@@ -69,46 +69,46 @@ export class EntityDAO {
         const { error } = await supabase.from('memberships').insert(rows).select();
         if (error) throw new Error(`Bulk membership insert failed: ${error.message}`);
     }
-
     static async getEntitiesWithWalletAndManager() {
         try {
-            // First, get all entities with their owners
+            // Step 1: Fetch entities with owner (manager) info
             const { data: entitiesData, error: entitiesError } = await supabase
                 .from('entities')
                 .select(`
+        id,
+        name,
+        type,
+        description,
+        owner_id,
+        created_at,
+        updated_at,
+        users!fk_entities_owner (
           id,
-          name,
-          type,
-          description,
-          owner_id,
-          created_at,
-          updated_at,
-          users!fk_entities_owner(
-            id,
-            username
-          )
-        `);
+          username
+        )
+      `);
 
             if (entitiesError) throw new Error(entitiesError.message);
 
-            // Then get wallet information for each entity
+            // Step 2: Extract entity IDs
             const entityIds = entitiesData.map(entity => entity.id);
 
+            // Step 3: Fetch wallets for those entities (owner_type = 'entity')
             const { data: walletsData, error: walletsError } = await supabase
                 .from('wallets')
-                .select('id, owner_id, public_key')
+                .select('id, owner_id, public_key, balance')
                 .eq('owner_type', 'entity')
                 .in('owner_id', entityIds);
 
             if (walletsError) throw new Error(walletsError.message);
 
-            // Create a map of wallets by owner_id for quick lookup
+            // Step 4: Map wallets by owner_id
             const walletMap = new Map();
             walletsData.forEach(wallet => {
                 walletMap.set(wallet.owner_id, wallet);
             });
 
-            // Combine the data
+            // Step 5: Build and return combined result
             return entitiesData.map((entity: any) => {
                 const wallet = walletMap.get(entity.id);
 
@@ -121,6 +121,7 @@ export class EntityDAO {
                     updated_at: entity.updated_at,
                     wallet_id: wallet?.id || null,
                     wallet_public_key: wallet?.public_key || null,
+                    wallet_balance: wallet?.balance ?? 0,
                     owner_id: entity.owner_id,
                     owner_name: entity.users?.username || null,
                 };
@@ -129,4 +130,5 @@ export class EntityDAO {
             throw new Error(`Error fetching entities: ${error.message}`);
         }
     }
+
 }
