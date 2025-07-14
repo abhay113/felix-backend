@@ -1,55 +1,51 @@
-
-// src/services/entity.service.ts
 import { EntityDAO } from '../dao/entity.dao';
-import { StellarService } from '../services/stellar.service';
+import { StellarService } from './stellar.service';
 
 export class EntityService {
-  static async createEntityWithWalletAndAdmin(data: {
+  static async createEntityWithWallet({
+    name,
+    type,
+    description,
+    owner_id,
+    members,
+    created_by,
+  }: {
     name: string;
     type: string;
     description?: string;
     owner_id: string;
+    members: string[];
     created_by: string;
   }) {
-    const { name, type, description, owner_id, created_by } = data;
+    const { data: entity, error } = await EntityDAO.createEntity({
+      name,
+      type,
+      description,
+      owner_id,
+      created_by,
+    });
 
-    try {
-      // 1. Create entity record
-      const { data: entity, error } = await EntityDAO.createEntity({
-        name,
-        type,
-        description,
-        owner_id,
-        created_by,
-      });
+    if (error || !entity) throw new Error(error?.message || 'Entity creation failed.');
 
-      if (error || !entity) {
-        throw new Error(error?.message || 'Failed to create entity.');
-      }
+    const wallet = await StellarService.createAndSetupAccount();
 
-      // 2. Call the existing service to create & setup Stellar wallet
-      const account = await StellarService.createAndSetupAccount();
+    await EntityDAO.createWalletForEntity(entity.id, wallet.publicKey, wallet.secretKey, created_by);
+    await EntityDAO.addMembership(owner_id, entity.id, 'manager', created_by);
 
-      // 3. Store the wallet in DB
-      await EntityDAO.createWalletForEntity(
-        entity.id,
-        account.publicKey,
-        account.secretKey,
-        created_by
-      );
-
-      // 4. Add the owner as admin to membership table
-      await EntityDAO.addMembership(owner_id, entity.id, created_by);
-
-      return {
-        message: 'Entity created and wallet setup successfully.',
-        entity,
-        walletPublicKey: account.publicKey,
-        trustTransactionHash: account.trustTransactionHash
-      };
-    } catch (error: any) {
-      console.error('Error in createEntityWithWalletAndAdmin:', error);
-      throw new Error(`Failed to create entity with wallet: ${error.message}`);
+    if (members.length > 0) {
+      await EntityDAO.addMultipleMembers(members, entity.id, 'member', created_by);
     }
+
+    return {
+      message: 'Entity created successfully with wallet and members.',
+      entity,
+      walletPublicKey: wallet.publicKey,
+      trustTransactionHash: wallet.trustTransactionHash,
+      membersAdded: {
+        manager: owner_id,
+        members,
+        total: members.length + 1,
+      },
+    };
   }
 }
