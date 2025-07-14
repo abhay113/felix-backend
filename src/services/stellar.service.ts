@@ -213,6 +213,24 @@ export class StellarService {
 
             const createdOffer = await OfferDAO.createOffer(offerData);
             console.log("createdOffer",createdOffer)
+              if(createdOffer) {
+                    const transactionData: TransactionData = {
+                        sender_id: seller_id!,                      // buyer is the one paying
+                        receiver_id: '',       // seller from offer record
+                        asset_code: config.assetCode,
+                        amount: parseFloat(amount),
+                        memo,
+                        tx_hash: transactionHash,
+                        created_by: created_by,
+                        updated_by: '',
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                        transaction_type:"sell"
+                        };
+
+                    const createdTransaction = await TransactionDAO.createTransaction(transactionData);
+                        console.log("createdTransaction",createdTransaction)
+                }
             console.log('Step 3: Sell offer created successfully!');
             return {
                 message: 'Blue Dollar sell offer created successfully',
@@ -269,7 +287,8 @@ export class StellarService {
                         created_by: buyer_id,
                         updated_by: buyer_id,
                         created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
+                        updated_at: new Date().toISOString(),
+                        transaction_type:"buy"
                         };
 
                     const createdTransaction = await TransactionDAO.createTransaction(transactionData);

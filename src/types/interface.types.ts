@@ -43,4 +43,5 @@ export interface TransactionData {
     updated_at?: string;
     created_by?: string;
     updated_by?: string;
+    transaction_type?:string;
 }
