@@ -34,7 +34,7 @@ export interface OfferData {
 export interface TransactionData {
     id?: string;
     sender_id: string;
-    receiver_id: string;
+    receiver_id?: string | null;
     asset_code: string;
     amount: number;
     memo?: string;
