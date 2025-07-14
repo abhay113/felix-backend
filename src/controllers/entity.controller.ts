@@ -20,4 +20,16 @@ export class EntityController {
       res.status(500).json({ error: err.message });
     }
   }
+  public static async getWalletDataofEntity(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.params.userId;
+      console.log('userId for entity wallet data:', userId);
+
+      const result = await EntityService.getWalletDataofEntity(userId);
+      res.status(200).json(result);
+    } catch (err: any) {
+      console.error(err.response?.data || err.message);
+      res.status(500).json({ error: 'Failed to fetch entity wallet data' });
+    }
+  }
 }

@@ -130,5 +130,69 @@ export class EntityDAO {
             throw new Error(`Error fetching entities: ${error.message}`);
         }
     }
+    static async getWalletDataofEntity(userId: string) {
+        try {
+            // First query: Get all entities owned by the user
+            const { data: entities, error: entitiesError } = await supabase
+                .from('entities')
+                .select('*')
+                .eq('owner_id', userId);
 
+            if (entitiesError) {
+                console.error("Supabase entities error:", entitiesError.message);
+                throw new Error(`Supabase entities error: ${entitiesError.message}`);
+            }
+
+            if (!entities || entities.length === 0) {
+                console.log(`No entities found for user: ${userId}`);
+                return {
+                    user_id: userId,
+                    entities: []
+                };
+            }
+
+            console.log("Fetched entities:", entities);
+
+            // Second query: Get wallet data for each entity
+            const entitiesWithWallets = await Promise.all(
+                entities.map(async (entity) => {
+                    const { data: walletData, error: walletError } = await supabase
+                        .from('wallets')
+                        .select('*')
+                        .eq('owner_id', entity.id)
+                        .eq('owner_type', 'entity')
+                        .order('created_at', { ascending: false })
+                        .single();
+
+                    if (walletError && walletError.code !== 'PGRST116') {
+                        console.error(`Supabase wallet error for entity ${entity.id}:`, walletError.message);
+                        // Return entity with null wallet if wallet fetch fails
+                        return {
+                            ...entity,
+                            wallet: null
+                        };
+                    }
+
+                    console.log(`Wallet data for entity ${entity.id}:`, walletData);
+
+                    return {
+                        ...entity,
+                        wallet: walletData
+                    };
+                })
+            );
+
+            const result = {
+                user_id: userId,
+                entities: entitiesWithWallets
+            };
+
+            console.log("Complete entity wallet data:", result);
+            return result;
+
+        } catch (error) {
+            console.error('Error in getWalletDataofEntity DAO:', error);
+            throw error;
+        }
+    }
 }

@@ -51,4 +51,13 @@ export class EntityService {
   static async fetchEntitiesWithWalletAndManager() {
     return await EntityDAO.getEntitiesWithWalletAndManager();
   }
+  public static async getWalletDataofEntity(userId: string) {
+    try {
+      const entitiesWithWallets = await EntityDAO.getWalletDataofEntity(userId);
+      return entitiesWithWallets;
+    } catch (error) {
+      console.error('Error while fetching entity wallet data:', error);
+      throw new Error('Failed to fetch entity wallet data');
+    }
+  }
 }
