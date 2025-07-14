@@ -3,7 +3,7 @@ import { supabase } from '../config/supabase.config';
 export class AuthDAO {
   // Convert insertUserToDB to a static method
   public static async insertUserToDB(user: {
-    id: string;
+    id: string | undefined;
     email: string;
     username: string;
     created_by?: string;

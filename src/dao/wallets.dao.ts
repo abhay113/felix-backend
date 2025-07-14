@@ -15,7 +15,7 @@ export class WalletsDAO {
   }
 
  public static async insertWalletToDB(wallet: {
-    owner_id: string;
+    owner_id: string | undefined;
     public_key: string;
     secret_key: string;
     balance: number;

@@ -38,7 +38,7 @@ export class AuthService {
 
       // --- Step 2: Create user in Keycloak ---
       // Use the obtained admin token to create a new user in the specified realm
-      await axios.post(
+      const userData = await axios.post(
         `${keycloakConfig.keycloakUrl}/admin/realms/${keycloakConfig.realm}/users`,
         {
           username: dto.name,
@@ -59,7 +59,7 @@ export class AuthService {
           headers: { Authorization: `Bearer ${token}` }, // Authorize the request with the admin token
         }
       );
-
+      console.log("userData-->",userData)
       // --- Step 3: Get the newly created user's Keycloak ID ---
       const userSearchRes = await axios.get(
         `${keycloakConfig.keycloakUrl}/admin/realms/${keycloakConfig.realm}/users?email=${encodeURIComponent(dto.email)}`,
@@ -117,14 +117,14 @@ export class AuthService {
 
     // --- Step 7: Insert user details into your application's database ---
     await AuthDAO.insertUserToDB({
-      id: userId,
+      id: keycloakUserId,
       email: dto.email,
       username: dto.name,
       created_by: dto.created_by,
     });
 
     await WalletsDAO.insertWalletToDB({
-      owner_id: userId,
+      owner_id: keycloakUserId,
       public_key: stellarResult.publicKey,
       secret_key: stellarResult.secretKey,
       balance: 0,
