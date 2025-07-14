@@ -33,6 +33,7 @@ export class TransactionDAO {
   }
 
   static async getTransactionsForUser(userId: string): Promise<TransactionData[]> {
+    if(userId) {
     try {
       const { data, error } = await supabase
         .from('transactions')
@@ -46,5 +47,19 @@ export class TransactionDAO {
       console.error('Get transactions error:', error);
       throw new Error(`Failed to fetch transactions: ${error.message}`);
     }
+  } else {
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      console.error('Get transactions error:', error);
+      throw new Error(`Failed to fetch transactions: ${error.message}`);
+    }
+  }
   }
 }

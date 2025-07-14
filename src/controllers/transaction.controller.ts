@@ -16,9 +16,9 @@ export class TransactionController {
   static async getUserTransactions(req: Request, res: Response) {
     const userId = req.query.userId as string;
 
-    if (!userId) {
-      res.status(400).json({ error: 'Missing userId in query' });
-    }
+    // if (!userId) {
+    //   res.status(400).json({ error: 'Missing userId in query' });
+    // }
 
     try {
       const transactions = await TransactionService.getUserTransactions(userId);
