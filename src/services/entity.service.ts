@@ -48,4 +48,7 @@ export class EntityService {
       },
     };
   }
+  static async fetchEntitiesWithWalletAndManager() {
+    return await EntityDAO.getEntitiesWithWalletAndManager();
+  }
 }

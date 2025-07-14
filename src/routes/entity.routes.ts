@@ -6,5 +6,5 @@ const router = express.Router();
 
 router.post('/entity/create', authenticateToken, EntityController.createEntity);
 // router.get('/entity/:id', authenticateToken, EntityController.getEntityById);
-// router.get('/entities', authenticateToken, EntityController.getAllEntities);
+router.get('/entities', EntityController.getEntities);
 export default router;

@@ -11,4 +11,13 @@ export class EntityController {
       res.status(500).json({ error: err.message });
     }
   }
+  static async getEntities(req: Request, res: Response) {
+    try {
+      const result = await EntityService.fetchEntitiesWithWalletAndManager();
+      res.status(200).json(result);
+    } catch (err: any) {
+      console.error('Error fetching entities:', err);
+      res.status(500).json({ error: err.message });
+    }
+  }
 }

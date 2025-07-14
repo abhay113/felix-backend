@@ -69,4 +69,64 @@ export class EntityDAO {
         const { error } = await supabase.from('memberships').insert(rows).select();
         if (error) throw new Error(`Bulk membership insert failed: ${error.message}`);
     }
+
+    static async getEntitiesWithWalletAndManager() {
+        try {
+            // First, get all entities with their owners
+            const { data: entitiesData, error: entitiesError } = await supabase
+                .from('entities')
+                .select(`
+          id,
+          name,
+          type,
+          description,
+          owner_id,
+          created_at,
+          updated_at,
+          users!fk_entities_owner(
+            id,
+            username
+          )
+        `);
+
+            if (entitiesError) throw new Error(entitiesError.message);
+
+            // Then get wallet information for each entity
+            const entityIds = entitiesData.map(entity => entity.id);
+
+            const { data: walletsData, error: walletsError } = await supabase
+                .from('wallets')
+                .select('id, owner_id, public_key')
+                .eq('owner_type', 'entity')
+                .in('owner_id', entityIds);
+
+            if (walletsError) throw new Error(walletsError.message);
+
+            // Create a map of wallets by owner_id for quick lookup
+            const walletMap = new Map();
+            walletsData.forEach(wallet => {
+                walletMap.set(wallet.owner_id, wallet);
+            });
+
+            // Combine the data
+            return entitiesData.map((entity: any) => {
+                const wallet = walletMap.get(entity.id);
+
+                return {
+                    entity_id: entity.id,
+                    entity_name: entity.name,
+                    type: entity.type,
+                    description: entity.description || null,
+                    created_at: entity.created_at,
+                    updated_at: entity.updated_at,
+                    wallet_id: wallet?.id || null,
+                    wallet_public_key: wallet?.public_key || null,
+                    owner_id: entity.owner_id,
+                    owner_name: entity.users?.username || null,
+                };
+            });
+        } catch (error: any) {
+            throw new Error(`Error fetching entities: ${error.message}`);
+        }
+    }
 }
