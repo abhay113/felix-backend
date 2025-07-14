@@ -216,7 +216,7 @@ export class StellarService {
               if(createdOffer) {
                     const transactionData: TransactionData = {
                         sender_id: seller_id!,                      // buyer is the one paying
-                        receiver_id: '',       // seller from offer record
+                        receiver_id: null,       // seller from offer record
                         asset_code: config.assetCode,
                         amount: parseFloat(amount),
                         memo,
